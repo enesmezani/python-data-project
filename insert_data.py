@@ -13,11 +13,9 @@ def insert_data(session: Session, data: list):
         authors = [Author(**author) for author in entry.get('authors', [])]
         genres = [Genre(**genre) for genre in entry.get('genres', [])]
 
-        # Create authors and genres first, as they are needed for creating books
         session.add_all(authors + genres)
         session.flush()  # Flush the session to get the inserted IDs
 
-        # Update book data with correct author and genre IDs
         for book_data in entry.get('books', []):
             authors_data = book_data.get('authors', [])
             if authors_data:
@@ -33,22 +31,18 @@ def insert_data(session: Session, data: list):
 
             book_data['genres'] = genre_ids
 
-            # Convert string date to Python date object
             if 'publication_date' in book_data and isinstance(book_data['publication_date'], str):
                 book_data['publication_date'] = datetime.strptime(book_data['publication_date'], '%Y-%m-%d').date()
 
-            # Convert book_data to an instance of the Book class
             book_instance = Book(**book_data)
             session.add(book_instance)
 
-        # Create other objects
         publishers = [Publisher(**publisher) for publisher in entry.get('publishers', [])]
         borrowers = [Borrower(**borrower) for borrower in entry.get('borrowers', [])]
 
-        # Convert date strings to Python date objects for transactions
         transactions_data = entry.get('transactions', [])
         if isinstance(transactions_data, dict):
-            transactions_data = [transactions_data]  # Convert a single object to a list
+            transactions_data = [transactions_data] 
 
         for transaction_data in transactions_data:
             if 'check_out_date' in transaction_data and isinstance(transaction_data['check_out_date'], str):
